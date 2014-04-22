@@ -85,7 +85,7 @@ pk_backend_find_provider (PkBackend *self, alpm_list_t *pkgs,
 	}
 
 	/* look for remote dependencies */
-	syncdbs = alpm_option_get_syncdbs (alpm);
+	syncdbs = alpm_get_syncdbs (alpm);
 	provider = alpm_find_dbs_satisfier (alpm, syncdbs, depend);
 
 	if (provider != NULL) {
@@ -184,7 +184,7 @@ pk_backend_get_depends_thread (PkBackend *self)
 			depend = alpm_dep_compute_string (depends->data);
 			pkgs = pk_backend_find_provider (self, pkgs, depend,
 							 &error);
-			g_free (depend);
+			free (depend);
 		}
 	}
 

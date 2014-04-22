@@ -39,7 +39,7 @@ alpm_add_file (const gchar *filename)
 	g_return_val_if_fail (filename != NULL, -1);
 	g_return_val_if_fail (alpm != NULL, -1);
 
-	level = alpm_option_get_default_siglevel (alpm);
+	level = alpm_option_get_local_file_siglevel (alpm);
 
 	if (alpm_pkg_load (alpm, filename, 1, level, &pkg) < 0) {
 		return -1;
@@ -66,7 +66,7 @@ pk_backend_transaction_add_targets (PkBackend *self, GError **error)
 
 	for (; *paths != NULL; ++paths) {
 		if (alpm_add_file (*paths) < 0) {
-			enum _alpm_errno_t errno = alpm_errno (alpm);
+			alpm_errno_t errno = alpm_errno (alpm);
 			g_set_error (error, ALPM_ERROR, errno, "%s: %s",
 				     *paths, alpm_strerror (errno));
 			return FALSE;
