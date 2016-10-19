@@ -1,14 +1,13 @@
 PackageKit
 ==========
 
-based on PackageKit 0.7.6
+based on PackageKit v0.7.6
 
 
-## Build for ArchLinux
+## Build for YUM
 
 ```
 patch -Np1 -i adopt.patch
-patch -Np1 -i alpm.patch
 patch -Np1 -i libarchive.patch
 
 export PYTHON=/usr/bin/python2
@@ -30,9 +29,9 @@ export PYTHON=/usr/bin/python2
              --disable-debuginfo-install \
              --enable-pm-utils \
              --disable-dummy \
-             --enable-alpm \
-             --with-default-backend=alpm                                          
+             --enable-yum \
+             --with-default-backend=yum
 
 make -s CFLAGS='-D_FILE_OFFSET_BITS=64 -O2 -Wno-unused-local-typedefs -Wno-deprecated-declarations -Wno-suggest-attribute=format'
-
+sudo make install
 ```
