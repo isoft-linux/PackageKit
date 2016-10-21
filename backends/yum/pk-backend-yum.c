@@ -25,6 +25,7 @@
 #include <pk-backend-spawn.h>
 #include <string.h>
 #include <packagekit-glib2/pk-debug.h>
+#include <stdio.h>
 
 #define PREUPGRADE_BINARY			"/usr/bin/preupgrade"
 #define YUM_REPOS_DIRECTORY			"/etc/yum.repos.d"
@@ -533,6 +534,28 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 	g_free (package_ids_temp);
 }
 
+static gboolean backend_manage_packages_thread(PkBackend *backend) 
+{
+    gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
+    gchar *package_ids_temp = NULL;
+    char cmd[512] = { '\0' };
+    PkRoleEnum role = pk_backend_get_role(backend);
+    char *token = NULL;
+    package_ids_temp = pk_package_ids_to_string(package_ids);
+    token = strtok(package_ids_temp, ";");
+    if (token) {
+        snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", 
+            role == PK_ROLE_ENUM_INSTALL_PACKAGES ? "install" : "remove", token);
+        printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
+        g_spawn_command_line_sync(cmd, NULL, NULL, 0, NULL);
+    }
+    if (package_ids_temp) {
+        g_free(package_ids_temp);
+        package_ids_temp = NULL;
+    }
+    pk_backend_thread_finished(backend);
+    return TRUE;
+}
 
 /**
  * pk_backend_install_packages:
@@ -540,10 +563,7 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 void
 pk_backend_install_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "install-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
-	g_free (package_ids_temp);
+    pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
 
 /**
@@ -553,7 +573,7 @@ void
 pk_backend_simulate_remove_packages (PkBackend *backend, gchar **package_ids, gboolean autoremove)
 {
 	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
+    package_ids_temp = pk_package_ids_to_string (package_ids);
 	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "simulate-remove-packages", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
@@ -622,10 +642,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 void
 pk_backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "remove-packages", pk_backend_bool_to_string (allow_deps), pk_backend_bool_to_string (autoremove), package_ids_temp, NULL);
-	g_free (package_ids_temp);
+    pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
 
 /**

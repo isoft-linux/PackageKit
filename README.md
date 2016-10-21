@@ -7,9 +7,6 @@ based on PackageKit v0.7.6
 ## Build for YUM
 
 ```
-patch -Np1 -i adopt.patch
-patch -Np1 -i libarchive.patch
-
 export PYTHON=/usr/bin/python2
 
 ./autogen.sh --prefix=/usr \
@@ -28,6 +25,7 @@ export PYTHON=/usr/bin/python2
              --disable-cron \
              --disable-debuginfo-install \
              --enable-pm-utils \
+             --disable-qt \
              --disable-dummy \
              --enable-yum \
              --with-default-backend=yum
