@@ -537,15 +537,20 @@ pk_backend_get_update_detail (PkBackend *backend, gchar **package_ids)
 static gboolean backend_manage_packages_thread(PkBackend *backend) 
 {
     gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
-    gchar *package_ids_temp = NULL;
+    gchar *package_ids_temp = pk_package_ids_to_string(package_ids);
     char cmd[512] = { '\0' };
     PkRoleEnum role = pk_backend_get_role(backend);
+    char action[8] = { '\0' };
     char *token = NULL;
-    package_ids_temp = pk_package_ids_to_string(package_ids);
     token = strtok(package_ids_temp, ";");
     if (token) {
-        snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", 
-            role == PK_ROLE_ENUM_INSTALL_PACKAGES ? "install" : "remove", token);
+        if (role == PK_ROLE_ENUM_INSTALL_PACKAGES)
+            strncpy(action, "install", sizeof(action) - 1);
+        else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES)
+            strncpy(action, "remove", sizeof(action) - 1);
+        else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES)
+            strncpy(action, "update", sizeof(action) - 1);
+        snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", action, token);
         printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
         g_spawn_command_line_sync(cmd, NULL, NULL, 0, NULL);
     }
@@ -711,10 +716,7 @@ pk_backend_search_names (PkBackend *backend, PkBitfield filters, gchar **values)
 void
 pk_backend_update_packages (PkBackend *backend, gboolean only_trusted, gchar **package_ids)
 {
-	gchar *package_ids_temp;
-	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (priv->spawn, "yumBackend.py", "update-packages", pk_backend_bool_to_string (only_trusted), package_ids_temp, NULL);
-	g_free (package_ids_temp);
+    pk_backend_thread_create(backend, backend_manage_packages_thread);
 }
 
 /**
