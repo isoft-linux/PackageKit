@@ -553,10 +553,6 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
         snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", action, token);
         printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
         g_spawn_command_line_sync(cmd, NULL, NULL, 0, NULL);
-        memset(cmd, 0, sizeof(cmd));
-        strncpy(cmd, "/usr/bin/yum clean all", sizeof(cmd) - 1);
-        printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
-        g_spawn_command_line_sync(cmd, NULL, NULL, 0, NULL);
     }
     if (package_ids_temp) {
         g_free(package_ids_temp);
