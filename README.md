@@ -9,6 +9,8 @@ based on PackageKit v0.7.6
 ```
 export PYTHON=/usr/bin/python2
 
+libtoolize --force --copy
+
 ./autogen.sh --prefix=/usr \
              --sysconfdir=/etc \
              --localstatedir=/var \
@@ -30,6 +32,6 @@ export PYTHON=/usr/bin/python2
              --enable-yum \
              --with-default-backend=yum
 
-make -s CFLAGS='-D_FILE_OFFSET_BITS=64 -O2 -Wno-unused-local-typedefs -Wno-deprecated-declarations -Wno-suggest-attribute=format'
+make -s CFLAGS='-D_FILE_OFFSET_BITS=64 -O2 -Wno-unused-local-typedefs -Wno-deprecated-declarations -Wno-suggest-attribute=format -g' -j 5
 sudo make install
 ```

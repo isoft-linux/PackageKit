@@ -553,8 +553,8 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
         else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES)
             strncpy(action, "update", sizeof(action) - 1);
         snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", action, token);
-        printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
         ret = system(cmd);
+        printf("DEBUG: %s, line %d: %s %d\n", __func__, __LINE__, cmd, ret);
     }
     if (package_ids_temp) {
         g_free(package_ids_temp);
