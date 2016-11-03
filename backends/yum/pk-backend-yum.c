@@ -539,6 +539,7 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
     gchar **package_ids = pk_backend_get_strv(backend, "package_ids");
     gchar *package_ids_temp = pk_package_ids_to_string(package_ids);
     char cmd[512] = { '\0' };
+    int ret = -1;
     PkRoleEnum role = pk_backend_get_role(backend);
     char action[8] = { '\0' };
     char *token = NULL;
@@ -552,14 +553,14 @@ static gboolean backend_manage_packages_thread(PkBackend *backend)
             strncpy(action, "update", sizeof(action) - 1);
         snprintf(cmd, sizeof(cmd) - 1, "/usr/bin/yum -y %s %s", action, token);
         printf("DEBUG: %s, line %d: %s\n", __func__, __LINE__, cmd);
-        g_spawn_command_line_sync(cmd, NULL, NULL, 0, NULL);
+        ret = system(cmd);
     }
     if (package_ids_temp) {
         g_free(package_ids_temp);
         package_ids_temp = NULL;
     }
     pk_backend_thread_finished(backend);
-    return TRUE;
+    return ret == 0 ? TRUE : FALSE;
 }
 
 /**
