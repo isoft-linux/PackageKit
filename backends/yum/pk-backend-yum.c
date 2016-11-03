@@ -26,6 +26,7 @@
 #include <string.h>
 #include <packagekit-glib2/pk-debug.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define PREUPGRADE_BINARY			"/usr/bin/preupgrade"
 #define YUM_REPOS_DIRECTORY			"/etc/yum.repos.d"
